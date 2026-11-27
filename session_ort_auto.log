@@ -1,0 +1,146 @@
+=== 2026-11-18 15:37:39 ort-auto: clean rebuild + ctest ===
+[  8%] Building CXX object CMakeFiles/dxinfer_core.dir/src/pool_warning.cpp.o
+[ 16%] Built target dxinfer_core
+[ 52%] Building CXX object CMakeFiles/test_pool_warning.dir/tests/test_pool_warning.cpp.o
+[ 60%] Built target test_stats
+[ 64%] Linking CXX executable test_pool_warning
+[ 68%] Built target test_pool_warning
+[ 68%] Built target test_buffer_pool
+[ 80%] Built target test_result
+[ 80%] Built target test_reorder_buffer
+[ 80%] Built target test_model_graph
+[ 84%] Built target dxinfer
+[ 96%] Built target demo_callback
+[100%] Built target demo_blocking
+    Start 3: test_stats
+3/6 Test #3: test_stats .......................   Passed    0.00 sec
+    Start 4: test_result
+4/6 Test #4: test_result ......................   Passed    0.00 sec
+    Start 5: test_pool_warning
+5/6 Test #5: test_pool_warning ................   Passed    0.11 sec
+    Start 6: test_model_graph
+6/6 Test #6: test_model_graph .................   Passed    0.00 sec
+
+100% tests passed, 0 tests failed out of 6
+
+Total Test time (real) =   0.26 sec
+
+=== demo_blocking --ort auto (yolo26n v8) ===
+[dxinfer] network 'det': CPU task(s) cpu_0 (tail) run on ONNX Runtime (ort=auto -> on). For lower latency set NetworkOptions::ort = OrtMode::Off and implement them yourself: results become npu_0's raw output tensors [/model.23/one2one_cv2.0/one2one_cv2.0.2/Conv_output_0, /model.23/one2one_cv3.0/one2one_cv3.0.2/Conv_output_0, /model.23/one2one_cv2.1/one2one_cv2.1.2/Conv_output_0, /model.23/one2one_cv3.1/one2one_cv3.1.2/Conv_output_0, /model.23/one2one_cv2.2/one2one_cv2.2.2/Conv_output_0, /model.23/one2one_cv3.2/one2one_cv3.2.2/Conv_output_0].
+[dxinfer] network 'det': LoadFailed: /home/user/deepx/dx-all-suite/dx-agent-dev-showcase/ultralytics-retrain-eval-deepx-export-ppe/yolo26n_deepx_model/yolo26n.dxnn: SERVICE_IO: [dxrt-exception] Service input & output exception {dxrt service is not running}
+exit=1
+
+=== demo_blocking --ort off (yolo26n v8) ===
+[dxinfer] network 'det': ort=off: CPU task(s) cpu_0 (tail) are NOT run - you implement them yourself; results become npu_0's raw output tensors [/model.23/one2one_cv2.0/one2one_cv2.0.2/Conv_output_0, /model.23/one2one_cv3.0/one2one_cv3.0.2/Conv_output_0, /model.23/one2one_cv2.1/one2one_cv2.1.2/Conv_output_0, /model.23/one2one_cv3.1/one2one_cv3.1.2/Conv_output_0, /model.23/one2one_cv2.2/one2one_cv2.2.2/Conv_output_0, /model.23/one2one_cv3.2/one2one_cv3.2.2/Conv_output_0].
+[dxinfer] network 'det': LoadFailed: /home/user/deepx/dx-all-suite/dx-agent-dev-showcase/ultralytics-retrain-eval-deepx-export-ppe/yolo26n_deepx_model/yolo26n.dxnn: SERVICE_IO: [dxrt-exception] Service input & output exception {dxrt service is not running}
+exit=1
+
+=== demo_blocking --ort on (yolo26n v8) ===
+[dxinfer] network 'det': LoadFailed: /home/user/deepx/dx-all-suite/dx-agent-dev-showcase/ultralytics-retrain-eval-deepx-export-ppe/yolo26n_deepx_model/yolo26n.dxnn: SERVICE_IO: [dxrt-exception] Service input & output exception {dxrt service is not running}
+exit=1
+
+=== demo_blocking --ort auto on a copy patched to format v10 (warning path) ===
+[dxinfer] network 'det': WARNING: could not read the task graph of /tmp/tmp.sfuXnGLNjX/yolo26n_v10.dxnn (unsupported .dxnn format v10 (reader supports v7-v9)). ORT: on (safe default). Graph-based checks are disabled for this network. This usually means the .dxnn format changed: please update dxinfer's model_graph reader (src/model_graph.cpp).
+[dxinfer] network 'det': LoadFailed: /tmp/tmp.sfuXnGLNjX/yolo26n_v10.dxnn: SERVICE_IO: [dxrt-exception] Service input & output exception {dxrt service is not running}
+exit=1
+
+=== NPU check ===
+ls: cannot access '/dev/dxrt*': No such file or directory
+dxrtd not running
+
+=== bash -n ===
+run.sh/setup.sh syntax OK
+
+=== strict compile of new/changed sources ===
+clean: src/model_graph.cpp
+clean: src/network.cpp
+clean: src/inference_base.cpp
+clean: tests/test_model_graph.cpp
+
+=== copy-out gate: build + ctest outside the suite ===
+warnings: 4
+100% tests passed, 0 tests failed out of 6
+
+=== copy-out gate (re-count): real compiler diagnostics ('warning:' / 'error:') ===
+diagnostics: 0
+100% tests passed, 0 tests failed out of 6
+
+=== 2026-11-19 16:02:16 messages revision: RED build ===
+/home/user/deepx/dx-all-suite/dx-runtime/dx_app/dx-agent-dev/20261117-172801_claude_opus55_multinet_inference_lib/tests/test_pool_warning.cpp:99:73: error: no matching function for call to ‘dxinfer::PoolWarner::PoolWarner(const char [4], std::ostringstream&, std::chrono::milliseconds, int)’
+/home/user/deepx/dx-all-suite/dx-runtime/dx_app/dx-agent-dev/20261117-172801_claude_opus55_multinet_inference_lib/tests/test_pool_warning.cpp:100:29: error: ‘PoolOccupancy’ was not declared in this scope
+/home/user/deepx/dx-all-suite/dx-runtime/dx_app/dx-agent-dev/20261117-172801_claude_opus55_multinet_inference_lib/tests/test_pool_warning.cpp:114:63: error: no matching function for call to ‘dxinfer::PoolWarner::PoolWarner(const char [4], std::ostringstream&, std::chrono::milliseconds, int)’
+/home/user/deepx/dx-all-suite/dx-runtime/dx_app/dx-agent-dev/20261117-172801_claude_opus55_multinet_inference_lib/tests/test_pool_warning.cpp:115:29: error: ‘PoolOccupancy’ was not declared in this scope
+test_model_graph: PASS (0 failed checks)
+[100%] Built target test_model_graph
+  CHECK failed /home/user/deepx/dx-all-suite/dx-runtime/dx_app/dx-agent-dev/20261117-172801_claude_opus55_multinet_inference_lib/tests/test_model_graph.cpp:257: has_text(d.messages, "2 raw tensors")
+  CHECK failed /home/user/deepx/dx-all-suite/dx-runtime/dx_app/dx-agent-dev/20261117-172801_claude_opus55_multinet_inference_lib/tests/test_model_graph.cpp:258: has_text(d.messages, "print_info()")
+  CHECK failed /home/user/deepx/dx-all-suite/dx-runtime/dx_app/dx-agent-dev/20261117-172801_claude_opus55_multinet_inference_lib/tests/test_model_graph.cpp:259: !has_text(d.messages, "raw0")
+  CHECK failed /home/user/deepx/dx-all-suite/dx-runtime/dx_app/dx-agent-dev/20261117-172801_claude_opus55_multinet_inference_lib/tests/test_model_graph.cpp:268: has_text(d.messages, "2 raw tensors")
+  CHECK failed /home/user/deepx/dx-all-suite/dx-runtime/dx_app/dx-agent-dev/20261117-172801_claude_opus55_multinet_inference_lib/tests/test_model_graph.cpp:269: !has_text(d.messages, "raw0")
+[FAIL] decide_single_npu_with_cpu
+test_model_graph: FAIL (5 failed checks)
+[PASS] watch_is_edge_triggered_with_hysteresis
+[PASS] cleared_watch_reports_nothing
+[PASS] warner_prints_low_then_recovered
+[PASS] warner_is_rate_limited_and_counts_suppressed
+[PASS] warner_names_fifo_wait_as_cause
+[PASS] warner_names_app_as_cause
+test_pool_warning: PASS (0 failed checks)
+  CHECK failed /home/user/deepx/dx-all-suite/dx-runtime/dx_app/dx-agent-dev/20261117-172801_claude_opus55_multinet_inference_lib/tests/test_model_graph.cpp:257: has_text(d.messages, "2 raw tensors")
+  CHECK failed /home/user/deepx/dx-all-suite/dx-runtime/dx_app/dx-agent-dev/20261117-172801_claude_opus55_multinet_inference_lib/tests/test_model_graph.cpp:258: has_text(d.messages, "print_info()")
+  CHECK failed /home/user/deepx/dx-all-suite/dx-runtime/dx_app/dx-agent-dev/20261117-172801_claude_opus55_multinet_inference_lib/tests/test_model_graph.cpp:259: !has_text(d.messages, "raw0")
+  CHECK failed /home/user/deepx/dx-all-suite/dx-runtime/dx_app/dx-agent-dev/20261117-172801_claude_opus55_multinet_inference_lib/tests/test_model_graph.cpp:268: has_text(d.messages, "2 raw tensors")
+  CHECK failed /home/user/deepx/dx-all-suite/dx-runtime/dx_app/dx-agent-dev/20261117-172801_claude_opus55_multinet_inference_lib/tests/test_model_graph.cpp:269: !has_text(d.messages, "raw0")
+[FAIL] decide_single_npu_with_cpu
+test_model_graph: FAIL (5 failed checks)
+test_model_graph: PASS (0 failed checks)
+
+=== 2026-11-19 16:04:07 messages revision: clean rebuild + ctest ===
+compiler diagnostics: 0
+100% tests passed, 0 tests failed out of 6
+
+=== strict compile ===
+clean: src/model_graph.cpp
+src/network.cpp: In lambda function:
+src/network.cpp:149:54: warning: declaration of ‘o’ shadows a previous local [-Wshadow]
+  149 |                                        PoolOccupancy o;
+      |                                                      ^
+src/network.cpp:99:27: note: shadowed declaration is here
+   99 |     const NetworkOptions& o = spec.options;
+      |                           ^
+clean: src/network.cpp
+clean: src/inference_base.cpp
+clean: src/pool_warning.cpp
+clean: tests/test_pool_warning.cpp
+clean: tests/test_model_graph.cpp
+
+=== sample messages (real yolo26n.dxnn graph + both warning causes) ===
+[dxinfer] autospeed: ONNX Runtime on (ort=auto). cpu_0 runs on the CPU after npu_0.
+          Faster option: ort=OrtMode::Off, then implement cpu_0 yourself
+          (results become npu_0's 6 raw tensors; listed by print_info()).
+
+[dxinfer] autospeed: ort=off: cpu_0 is not run, you implement it yourself.
+          results become npu_0's 6 raw tensors; listed by print_info().
+
+[dxinfer] WARNING autospeed: result blocks low (1 of 12 free)
+          in flight 6 | waiting for FIFO order 5 | held by your app 0
+          Cause: an earlier job is slow, so later results wait for their turn. Usually start-up warm-up.
+          If it persists, raise InferenceConfig::extra_result_buffers (now 6).
+[dxinfer] autospeed: result blocks recovered (3 of 12 free) after 0 ms
+
+[dxinfer] WARNING autospeed: result blocks low (1 of 12 free)
+          in flight 6 | waiting for FIFO order 0 | held by your app 5
+          Cause: your app is still holding 5 Results. Drop them sooner,
+          or keep long-lived ones with Result::copy_out().
+
+=== fix shadow + capitalize: rebuild / ctest / strict ===
+compiler diagnostics: 0
+100% tests passed, 0 tests failed out of 6
+clean: src/network.cpp
+clean: src/model_graph.cpp
+clean: src/inference_base.cpp
+clean: src/pool_warning.cpp
+
+=== copy-out gate ===
+diagnostics: 0
+100% tests passed, 0 tests failed out of 6

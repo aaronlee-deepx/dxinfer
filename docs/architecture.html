@@ -1,0 +1,496 @@
+<title>dxinfer Architecture</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Space+Grotesk:wght@500;600&display=swap">
+<style>
+/* Layout: one reading column (~74ch) with wide figures that scroll inside their own frame.
+   Colour encodes layer (API / per-network / building block / dx-runtime / your code) and, in the pipeline, thread. */
+:root {
+  --bg: #f4f6f8; --surface: #ffffff; --fg: #17212b; --muted: #566472; --line: #d3dae2; --code-bg: #eaeef2;
+  --api: #3557b7; --api-soft: #e5ebfa;
+  --net: #0d7a73; --net-soft: #def3f0;
+  --core: #5b6676; --core-soft: #eceff3;
+  --rt: #a65a12; --rt-soft: #f8ead9;
+  --use: #7b3fa8; --use-soft: #f1e7f8;
+  --font-display: "Space Grotesk", "Segoe UI", system-ui, sans-serif;
+  --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #0f151b; --surface: #161f28; --fg: #e3e9ef; --muted: #98a6b4; --line: #2b3844; --code-bg: #1d2832;
+  --api: #8aa6f2; --api-soft: #1d2a4a; --net: #5fd0c4; --net-soft: #13332f;
+  --core: #a9b5c2; --core-soft: #222c37; --rt: #f0a85e; --rt-soft: #3a2914; --use: #c79bea; --use-soft: #2f2140;
+  color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --bg: #0f151b; --surface: #161f28; --fg: #e3e9ef; --muted: #98a6b4; --line: #2b3844; --code-bg: #1d2832;
+  --api: #8aa6f2; --api-soft: #1d2a4a; --net: #5fd0c4; --net-soft: #13332f;
+  --core: #a9b5c2; --core-soft: #222c37; --rt: #f0a85e; --rt-soft: #3a2914; --use: #c79bea; --use-soft: #2f2140;
+  color-scheme: dark; }
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 15.5px; line-height: 1.6; }
+.page { max-width: 1060px; margin: 0 auto; padding-block: 40px 72px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.col { max-width: 74ch; }
+h1, h2, h3 { font-family: var(--font-display); line-height: 1.2; text-wrap: balance; margin: 0; }
+h1 { font-size: 2.1rem; font-weight: 600; letter-spacing: -0.01em; }
+h2 { font-size: 1.45rem; font-weight: 600; margin-top: 56px; padding-top: 18px; border-top: 1px solid var(--line); }
+h3 { font-size: 1.1rem; font-weight: 600; margin-top: 30px; }
+p, ol, ul { margin: 12px 0 0; }
+li + li { margin-top: 6px; }
+.lede { font-size: 1.08rem; color: var(--muted); margin-top: 14px; }
+.eyebrow { font-family: var(--font-mono); font-size: .78rem; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+code, .mono { font-family: var(--font-mono); font-size: .88em; }
+code { background: var(--code-bg); padding: 1px 5px; border-radius: 4px; overflow-wrap: anywhere; }
+a { color: var(--api); }
+:focus-visible { outline: 2px solid var(--api); outline-offset: 2px; }
+nav.toc { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-top: 22px; font-size: .92rem; }
+nav.toc a { text-decoration: none; border-bottom: 1px solid var(--line); color: var(--fg); }
+nav.toc a:hover { border-color: var(--api); }
+.legend { display: flex; flex-wrap: wrap; gap: 8px 16px; margin-top: 14px; font-size: .86rem; color: var(--muted); }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.sw { width: 12px; height: 12px; border-radius: 3px; display: inline-block; border: 1.5px solid; }
+.sw.api { background: var(--api-soft); border-color: var(--api); }
+.sw.net { background: var(--net-soft); border-color: var(--net); }
+.sw.core { background: var(--core-soft); border-color: var(--core); }
+.sw.rt { background: var(--rt-soft); border-color: var(--rt); }
+.sw.use { background: var(--use-soft); border-color: var(--use); }
+figure { margin: 20px 0 0; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; }
+.scroll { overflow-x: auto; padding: 14px; }
+figure svg { display: block; min-width: 860px; width: 100%; height: auto; }
+figcaption { padding: 10px 16px 14px; font-size: .88rem; color: var(--muted); border-top: 1px solid var(--line); }
+svg text { font-family: var(--font-body); fill: var(--fg); font-size: 13px; }
+svg .t-title { font-family: var(--font-mono); font-weight: 500; font-size: 13.5px; }
+svg .t-sub { fill: var(--muted); font-size: 11.5px; }
+svg .t-band { font-family: var(--font-mono); font-size: 11px; letter-spacing: .08em; fill: var(--muted); }
+svg .band { fill: none; stroke: var(--line); stroke-dasharray: 4 4; }
+svg .b-api { fill: var(--api-soft); stroke: var(--api); stroke-width: 1.5; }
+svg .b-net { fill: var(--net-soft); stroke: var(--net); stroke-width: 1.5; }
+svg .b-core { fill: var(--core-soft); stroke: var(--core); stroke-width: 1.3; }
+svg .b-rt { fill: var(--rt-soft); stroke: var(--rt); stroke-width: 1.5; }
+svg .b-use { fill: var(--use-soft); stroke: var(--use); stroke-width: 1.5; }
+svg .lane-api { fill: var(--api-soft); opacity: .45; }
+svg .lane-rt { fill: var(--rt-soft); opacity: .55; }
+svg .lane-use { fill: var(--use-soft); opacity: .55; }
+svg .ln { fill: none; stroke: var(--muted); stroke-width: 1.4; }
+svg .ln-dash { fill: none; stroke: var(--muted); stroke-width: 1.3; stroke-dasharray: 5 4; }
+svg .ln-net { fill: none; stroke: var(--net); stroke-width: 1.6; }
+svg .ln-rt { fill: none; stroke: var(--rt); stroke-width: 1.6; }
+svg .ah { fill: var(--muted); }
+svg .ah-net { fill: var(--net); }
+svg .ah-rt { fill: var(--rt); }
+svg .hollow { fill: var(--surface); stroke: var(--muted); stroke-width: 1.4; }
+svg .t-edge { font-size: 11px; fill: var(--muted); font-style: italic; }
+.own { margin-top: 18px; font-size: .92rem; }
+.box { border: 1.5px solid; border-radius: 8px; padding: 10px 12px; min-width: 0; }
+.box > .h { font-family: var(--font-mono); font-weight: 500; }
+.box > .d { color: var(--muted); font-size: .86rem; }
+.box.api { border-color: var(--api); background: var(--api-soft); }
+.box.net { border-color: var(--net); background: var(--net-soft); }
+.box.core { border-color: var(--core); background: var(--core-soft); }
+.box.rt { border-color: var(--rt); background: var(--rt-soft); }
+.box.use { border-color: var(--use); background: var(--use-soft); }
+.box.surface { background: var(--surface); }
+.kids { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 10px; margin-top: 10px; }
+.span-all { grid-column: 1 / -1; }
+ol.steps { padding-left: 0; list-style: none; counter-reset: s; }
+ol.steps > li { counter-increment: s; display: grid; grid-template-columns: 2.1em 1fr; gap: 0 8px; }
+ol.steps > li::before { content: counter(s); font-family: var(--font-mono); font-size: .82rem; color: var(--muted);
+  border: 1px solid var(--line); border-radius: 50%; width: 1.75em; height: 1.75em; display: grid; place-items: center; margin-top: 2px; }
+ol.steps > li > div { min-width: 0; }
+.where { font-family: var(--font-mono); font-size: .8rem; color: var(--net); display: block; margin-top: 2px; }
+.tablewrap { overflow-x: auto; margin-top: 16px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; font-size: .9rem; min-width: 640px; }
+th, td { text-align: left; vertical-align: top; padding: 9px 12px; border-bottom: 1px solid var(--line); }
+th { font-family: var(--font-display); font-weight: 600; font-size: .86rem; background: var(--code-bg); }
+tr:last-child td { border-bottom: 0; }
+td.num { font-variant-numeric: tabular-nums; font-family: var(--font-mono); white-space: nowrap; }
+.held { color: var(--rt); font-weight: 500; }
+.rel { color: var(--net); font-weight: 500; }
+.note { margin-top: 16px; padding: 12px 14px; border-left: 3px solid var(--net); background: var(--surface); border-radius: 0 8px 8px 0; font-size: .93rem; }
+.two { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; margin-top: 16px; }
+.two > div { min-width: 0; }
+.two .d { color: var(--fg); }
+.read { columns: 2 280px; column-gap: 32px; }
+.read li { break-inside: avoid; }
+footer { margin-top: 56px; font-size: .85rem; color: var(--muted); }
+</style>
+<div class="page">
+<header class="col">
+  <div class="eyebrow">dx_app · dx-agent-dev · multinet_inference_lib</div>
+  <h1>dxinfer architecture</h1>
+  <p class="lede">dxinfer loads several <code>.dxnn</code> networks onto a DEEPX NPU at once. It keeps every network's device slots full and gives each network's results back in feed order. The output tensors are never copied. This page is a map for reading the code: what each part is, who owns what, and the path one input takes from <code>feed()</code> to your result.</p>
+  <nav class="toc" aria-label="Sections">
+    <a href="#layers">Layers</a><a href="#ownership">Ownership</a><a href="#pipeline">Pipeline</a>
+    <a href="#load">Load</a><a href="#feed">Feed</a><a href="#complete">Completion</a><a href="#fifo">FIFO</a>
+    <a href="#deliver">Delivery</a><a href="#memory">Result memory</a><a href="#ort">ORT graph</a>
+    <a href="#errors">Errors</a><a href="#shutdown">Shutdown</a><a href="#threads">Threads</a><a href="#reading">Reading order</a>
+  </nav>
+</header>
+
+<section id="layers">
+  <h2>1. Layers and modules</h2>
+  <div class="col">
+    <p>There are four layers. Your code only ever talks to the two public classes. Each loaded network is one internal <code>detail::Network</code>. The building blocks under it don't depend on dx-runtime, so they're unit-tested on any host. Only <code>detail::Network</code> touches dx-runtime.</p>
+  </div>
+  <div class="legend">
+    <span><i class="sw api"></i>public API</span><span><i class="sw net"></i>per-network (internal)</span>
+    <span><i class="sw core"></i>building block, no dx-runtime (dxinfer_core)</span><span><i class="sw rt"></i>dx-runtime</span><span><i class="sw use"></i>your code</span>
+  </div>
+  <figure>
+    <div class="scroll">
+    <svg viewBox="0 0 1000 640" role="img" aria-label="Layer diagram of dxinfer modules">
+      <defs>
+        <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="ah" d="M0,0 L10,5 L0,10 z"/></marker>
+        <marker id="tri" viewBox="0 0 12 12" refX="11" refY="6" markerWidth="11" markerHeight="11" orient="auto"><path class="hollow" d="M1,1 L11,6 L1,11 z"/></marker>
+        <marker id="dia" viewBox="0 0 14 10" refX="1" refY="5" markerWidth="12" markerHeight="9" orient="auto"><path class="ah" d="M1,5 L7,1 L13,5 L7,9 z"/></marker>
+      </defs>
+      <rect class="band" x="10" y="10" width="980" height="78" rx="8"/>
+      <text class="t-band" x="22" y="28">YOUR APPLICATION</text>
+      <rect class="b-use" x="40" y="38" width="250" height="40" rx="6"/><text class="t-title" x="54" y="63">examples/demo_blocking.cpp</text>
+      <rect class="b-use" x="310" y="38" width="250" height="40" rx="6"/><text class="t-title" x="324" y="63">examples/demo_callback.cpp</text>
+      <rect class="b-use" x="580" y="38" width="160" height="40" rx="6"/><text class="t-title" x="594" y="63">your code</text>
+
+      <rect class="band" x="10" y="108" width="980" height="196" rx="8"/>
+      <text class="t-band" x="22" y="126">PUBLIC API · include/dxinfer/</text>
+      <rect class="b-api" x="40" y="136" width="280" height="62" rx="6"/>
+      <text class="t-title" x="54" y="158">BlockingInference</text><text class="t-sub" x="54" y="178">get · try_get · get_for (you pull results)</text>
+      <rect class="b-api" x="340" y="136" width="300" height="62" rx="6"/>
+      <text class="t-title" x="354" y="158">CallbackInference</text><text class="t-sub" x="354" y="178">set_callback · wait_idle · one Lane thread / network</text>
+      <rect class="b-api" x="40" y="222" width="600" height="68" rx="6"/>
+      <text class="t-title" x="54" y="244">InferenceBase</text>
+      <text class="t-sub" x="54" y="263">load all-or-nothing · info / input_size / output_tensors · feed / try_feed</text>
+      <text class="t-sub" x="54" y="280">wait_completed · pending · stats / print_stats · print_info · close_all</text>
+      <path class="ln" d="M180,198 L180,220" marker-end="url(#tri)"/>
+      <path class="ln" d="M490,198 L490,220" marker-end="url(#tri)"/>
+      <rect class="b-api" x="670" y="136" width="300" height="154" rx="6"/>
+      <text class="t-title" x="684" y="158">types.hpp · error.hpp</text>
+      <text class="t-sub" x="684" y="180">NetworkSpec, NetworkOptions (OrtMode)</text>
+      <text class="t-sub" x="684" y="198">InferenceConfig (ExecMode, enable_stats,</text>
+      <text class="t-sub" x="684" y="214">  extra_result_buffers)</text>
+      <text class="t-sub" x="684" y="232">NetworkInfo, TensorInfo, ModelGraph</text>
+      <text class="t-sub" x="684" y="250">InferenceError (ErrorCode), Status</text>
+      <text class="t-sub" x="684" y="272">plain types, used by every layer</text>
+      <path class="ln" d="M300,78 L300,134" marker-end="url(#arr)"/>
+      <text class="t-edge" x="308" y="110">calls</text>
+
+      <rect class="band" x="10" y="324" width="640" height="96" rx="8"/>
+      <text class="t-band" x="22" y="342">PER NETWORK · src/network.hpp/.cpp (internal)</text>
+      <rect class="b-net" x="40" y="352" width="600" height="56" rx="6"/>
+      <text class="t-title" x="54" y="374">detail::Network ×N (one per NetworkSpec)</text>
+      <text class="t-sub" x="54" y="394">submit · complete · make_views · acquire_job / release_job · close</text>
+      <path class="ln" d="M340,290 L340,350" marker-start="url(#dia)"/>
+      <text class="t-edge" x="348" y="318">owns N (nets_)</text>
+
+      <rect class="band" x="10" y="440" width="640" height="190" rx="8"/>
+      <text class="t-band" x="22" y="458">BUILDING BLOCKS · dxinfer_core · host unit-tested</text>
+      <rect class="b-core" x="40" y="468" width="190" height="66" rx="6"/><text class="t-title" x="52" y="490">BufferPool</text><text class="t-sub" x="52" y="508">PooledBuffer (RAII block)</text><text class="t-sub" x="52" y="524">buffer_pool.hpp</text>
+      <rect class="b-core" x="245" y="468" width="190" height="66" rx="6"/><text class="t-title" x="257" y="490">ReorderBuffer&lt;Result&gt;</text><text class="t-sub" x="257" y="508">any order in, seq order out</text><text class="t-sub" x="257" y="524">reorder_buffer.hpp</text>
+      <rect class="b-core" x="450" y="468" width="190" height="66" rx="6"/><text class="t-title" x="462" y="490">Result · TensorView</text><text class="t-sub" x="462" y="508">holds the block · copy_out()</text><text class="t-sub" x="462" y="524">result.hpp</text>
+      <rect class="b-core" x="40" y="548" width="190" height="66" rx="6"/><text class="t-title" x="52" y="570">StatsRecorder</text><text class="t-sub" x="52" y="588">JobTimes · NetworkStats</text><text class="t-sub" x="52" y="604">stats.hpp/.cpp</text>
+      <rect class="b-core" x="245" y="548" width="190" height="66" rx="6"/><text class="t-title" x="257" y="570">PoolWarner</text><text class="t-sub" x="257" y="588">low-buffer stderr warning</text><text class="t-sub" x="257" y="604">pool_warning.hpp/.cpp</text>
+      <rect class="b-core" x="450" y="548" width="190" height="66" rx="6"/><text class="t-title" x="462" y="570">model_graph</text><text class="t-sub" x="462" y="588">read_model_graph · resolve_ort</text><text class="t-sub" x="462" y="604">model_graph.hpp/.cpp</text>
+      <path class="ln" d="M340,408 L340,466" marker-start="url(#dia)"/>
+      <text class="t-edge" x="348" y="436">owns / uses</text>
+
+      <rect class="band" x="670" y="324" width="320" height="306" rx="8"/>
+      <text class="t-band" x="682" y="342">DX-RUNTIME · libdxrt.so</text>
+      <rect class="b-rt" x="690" y="352" width="280" height="262" rx="6"/>
+      <text class="t-title" x="704" y="376">dxrt::InferenceEngine</text>
+      <text class="t-sub" x="704" y="396">via &lt;dxrt/dxrt_cxx_api.h&gt;</text>
+      <text class="t-sub" x="704" y="424">Run · RunMultiInput (sync)</text>
+      <text class="t-sub" x="704" y="442">RunAsync + RegisterCallback (async)</text>
+      <text class="t-sub" x="704" y="460">GetInputs / GetOutputs / GetOutputSize</text>
+      <text class="t-sub" x="704" y="478">GetTaskOrder · IsOrtConfigured · IsPPU</text>
+      <text class="t-sub" x="704" y="496">Get…Mean (NPU / queue / E2E counters)</text>
+      <text class="t-sub" x="704" y="524">dxrt::DeviceStatus (devices, free memory)</text>
+      <text class="t-sub" x="704" y="552">NPU tasks run on the DX-M1;</text>
+      <text class="t-sub" x="704" y="570">CPU tasks on ONNX Runtime when useORT</text>
+      <path class="ln" d="M640,372 L688,372" marker-end="url(#arr)"/>
+      <path class="ln-dash" d="M688,396 L642,396" marker-end="url(#arr)"/>
+      <text class="t-edge" x="644" y="364">owns engine_</text>
+      <text class="t-edge" x="646" y="412">callback</text>
+    </svg>
+    </div>
+    <figcaption>Hollow triangle = inherits. Diamond = owns (lifetime). Arrow = calls. Dashed = dx-runtime calls back into dxinfer (async mode). Two CMake targets: <code>dxinfer_core</code> (grey boxes, no dx-runtime) and <code>dxinfer</code> (blue + teal, links <code>dxrt</code>).</figcaption>
+  </figure>
+</section>
+<section id="ownership">
+  <h2>2. Who owns what</h2>
+  <div class="col"><p>Lifetimes explain most of the design. The one surprising edge is at the bottom. A <code>Result</code> holds a pool block, and the block holds a <code>shared_ptr</code> to its pool. So a result you keep stays valid even after the inference object is destroyed.</p></div>
+  <div class="own">
+    <div class="box api">
+      <div class="h">BlockingInference / CallbackInference → InferenceBase</div>
+      <div class="d">cfg_ (InferenceConfig) · nets_: vector&lt;unique_ptr&lt;detail::Network&gt;&gt; · by_name_ map. CallbackInference also owns one <span class="mono">Lane</span> per network: a thread, the callback (shared_ptr, swapped under a mutex) and an error counter.</div>
+      <div class="kids">
+        <div class="box net surface span-all">
+          <div class="h">detail::Network (one per NetworkSpec)</div>
+          <div class="d">info_ (NetworkInfo) · counters fed_ / completed_ / consumed_ · next_seq_</div>
+          <div class="kids">
+            <div class="box rt"><div class="h">engine_</div><div class="d">unique_ptr&lt;dxrt::InferenceEngine&gt;. Holds the model in NPU memory.</div></div>
+            <div class="box core"><div class="h">jobs_ + free_jobs_</div><div class="d">Fixed array of <span class="mono">Job</span>, size max_in_flight. It's never resized, because dx-runtime keeps <span class="mono">Job*</span> as its user arg.</div></div>
+            <div class="box core"><div class="h">pool_</div><div class="d">shared_ptr&lt;BufferPool&gt;. max_in_flight + extra blocks, each output_bytes long and 64-byte aligned.</div></div>
+            <div class="box core"><div class="h">results_</div><div class="d">ReorderBuffer&lt;Result&gt;. Finished jobs wait here until their turn.</div></div>
+            <div class="box core"><div class="h">stats_</div><div class="d">StatsRecorder. Every hook is a no-op when enable_stats is false.</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="kids" style="margin-top:12px">
+      <div class="box core"><div class="h">Job (inside jobs_)</div><div class="d">seq · user_arg · times · <b>PooledBuffer</b> while in flight. The buffer moves into the Result on completion.</div></div>
+      <div class="box core"><div class="h">Result</div><div class="d">network name (shared_ptr) · seq · user_arg · Status · <b>PooledBuffer</b> or owned bytes (copy_out) · TensorViews that point into that memory</div></div>
+      <div class="box core"><div class="h">PooledBuffer</div><div class="d">move-only block handle. Holds shared_ptr&lt;BufferPool&gt;. Its destructor gives the block back to the pool.</div></div>
+    </div>
+  </div>
+</section>
+
+<section id="pipeline">
+  <h2>3. The pipeline: one input, three threads</h2>
+  <div class="col"><p>Each lane is a thread. Async mode is shown. In sync mode the middle lane doesn't exist: <code>Run()</code> returns on the feeder thread, and <code>complete()</code> runs right there. Two dashed feedback edges keep the device full. Freeing a slot wakes a waiting feeder, and dropping a <code>Result</code> returns its block to the pool.</p></div>
+  <figure>
+    <div class="scroll">
+    <svg viewBox="0 0 1100 480" role="img" aria-label="Pipeline of one inference across feeder, dx-runtime callback and consumer threads">
+      <defs>
+        <marker id="a2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="ah" d="M0,0 L10,5 L0,10 z"/></marker>
+        <marker id="a2n" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="ah-net" d="M0,0 L10,5 L0,10 z"/></marker>
+        <marker id="a2r" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="ah-rt" d="M0,0 L10,5 L0,10 z"/></marker>
+      </defs>
+      <rect class="lane-api" x="0" y="20" width="1100" height="130" rx="6"/>
+      <rect class="lane-rt" x="0" y="170" width="1100" height="130" rx="6"/>
+      <rect class="lane-use" x="0" y="320" width="1100" height="140" rx="6"/>
+      <text class="t-band" x="14" y="44">FEEDER THREAD</text><text class="t-sub" x="14" y="62">any thread calling</text><text class="t-sub" x="14" y="78">feed() / try_feed()</text>
+      <text class="t-band" x="14" y="194">DX-RUNTIME THREAD</text><text class="t-sub" x="14" y="212">completion callback</text><text class="t-sub" x="14" y="228">(async mode only)</text>
+      <text class="t-band" x="14" y="344">CONSUMER</text><text class="t-sub" x="14" y="362">get() caller, or the</text><text class="t-sub" x="14" y="378">CallbackInference Lane</text>
+
+      <rect class="b-api" x="160" y="50" width="150" height="72" rx="6"/><text class="t-title" x="172" y="74">feed()</text><text class="t-sub" x="172" y="94">network(name)</text><text class="t-sub" x="172" y="110">check_can_feed</text>
+      <rect class="b-net" x="335" y="50" width="150" height="72" rx="6"/><text class="t-title" x="347" y="74">acquire_job</text><text class="t-sub" x="347" y="94">waits on slot_cv_</text><text class="t-sub" x="347" y="110">≤ max_in_flight</text>
+      <rect class="b-net" x="510" y="50" width="150" height="72" rx="6"/><text class="t-title" x="522" y="74">pool_→acquire</text><text class="t-sub" x="522" y="94">result block</text><text class="t-sub" x="522" y="110">(waits if all held)</text>
+      <rect class="b-net" x="685" y="50" width="150" height="72" rx="6"/><text class="t-title" x="697" y="74">seq = next_seq_++</text><text class="t-sub" x="697" y="94">user_arg · fed_++</text><text class="t-sub" x="697" y="110">stats_.on_feed</text>
+      <rect class="b-rt" x="860" y="50" width="200" height="72" rx="6"/><text class="t-title" x="872" y="74">RunAsync(in, job, blk)</text><text class="t-sub" x="872" y="94">dx-runtime copies the input;</text><text class="t-sub" x="872" y="110">feed() returns seq</text>
+      <path class="ln" d="M310,86 L333,86" marker-end="url(#a2)"/>
+      <path class="ln" d="M485,86 L508,86" marker-end="url(#a2)"/>
+      <path class="ln" d="M660,86 L683,86" marker-end="url(#a2)"/>
+      <path class="ln" d="M835,86 L858,86" marker-end="url(#a2)"/>
+
+      <rect class="b-rt" x="860" y="200" width="200" height="72" rx="6"/><text class="t-title" x="872" y="224">NPU (+ ORT tasks)</text><text class="t-sub" x="872" y="244">writes outputs straight</text><text class="t-sub" x="872" y="260">into the block</text>
+      <rect class="b-net" x="685" y="200" width="150" height="72" rx="6"/><text class="t-title" x="697" y="224">complete(job)</text><text class="t-sub" x="697" y="244">make_views</text><text class="t-sub" x="697" y="260">stats_.on_complete</text>
+      <rect class="b-net" x="510" y="200" width="150" height="72" rx="6"/><text class="t-title" x="522" y="224">release_job</text><text class="t-sub" x="522" y="244">slot freed first</text><text class="t-sub" x="522" y="260">notify slot_cv_</text>
+      <rect class="b-core" x="335" y="200" width="150" height="72" rx="6"/><text class="t-title" x="347" y="224">results_.push</text><text class="t-sub" x="347" y="244">(seq, Result)</text><text class="t-sub" x="347" y="260">completed_++</text>
+      <path class="ln-rt" d="M960,122 L960,198" marker-end="url(#a2r)"/>
+      <path class="ln" d="M858,236 L837,236" marker-end="url(#a2)"/>
+      <path class="ln" d="M683,236 L662,236" marker-end="url(#a2)"/>
+      <path class="ln" d="M508,236 L487,236" marker-end="url(#a2)"/>
+      <path class="ln-dash" d="M585,198 L585,160 L410,160 L410,124" marker-end="url(#a2)"/>
+      <text class="t-edge" x="420" y="154">wakes a waiting feeder: device refilled at once</text>
+
+      <rect class="b-core" x="335" y="352" width="150" height="80" rx="6"/><text class="t-title" x="347" y="376">pop()</text><text class="t-sub" x="347" y="396">only when seq ==</text><text class="t-sub" x="347" y="412">next: FIFO order</text>
+      <rect class="b-api" x="510" y="352" width="150" height="80" rx="6"/><text class="t-title" x="522" y="376">get() / callback</text><text class="t-sub" x="522" y="396">on_delivered</text><text class="t-sub" x="522" y="412">you read tensors</text>
+      <rect class="b-use" x="685" y="352" width="150" height="80" rx="6"/><text class="t-title" x="697" y="376">Result dropped</text><text class="t-sub" x="697" y="396">block → pool</text><text class="t-sub" x="697" y="412">on_consumed</text>
+      <path class="ln-net" d="M410,272 L410,350" marker-end="url(#a2n)"/>
+      <path class="ln" d="M485,392 L508,392" marker-end="url(#a2)"/>
+      <path class="ln" d="M660,392 L683,392" marker-end="url(#a2)"/>
+      <path class="ln-dash" d="M835,412 L1080,412 L1080,140 L600,140 L600,124" marker-end="url(#a2)"/>
+      <text class="t-edge" x="850" y="404">frees the block for a later feed</text>
+    </svg>
+    </div>
+    <figcaption>Functions shown are in <code>src/network.cpp</code> (teal), <code>reorder_buffer.hpp</code> / <code>buffer_pool.hpp</code> (grey), <code>inference_base.cpp</code> and the two public classes (blue). The feeder never waits for its own result. It only waits for a free slot or a free block.</figcaption>
+  </figure>
+</section>
+<section id="load">
+  <h2>4. Walkthroughs</h2>
+  <h3>a. Construction: loading every network, all or nothing</h3>
+  <div class="col">
+  <ol class="steps">
+    <li><div><b>Check the arguments before touching the device.</b> An empty list or <code>extra_result_buffers &lt; -1</code> gives <code>InvalidArgument</code>. Names are checked next: an empty name, or a duplicate (<code>DuplicateName</code>).<span class="where">InferenceBase::InferenceBase · src/inference_base.cpp</span></div></li>
+    <li><div><b>Create the networks in order.</b> If any one throws, <code>nets_.clear()</code> releases the engines already loaded, which frees their NPU memory. The error is rethrown with "already loaded and now released: …".<span class="where">InferenceBase::InferenceBase</span></div></li>
+    <li><div><b>Inside each network,</b> first check <code>bound</code> (0..6) and <code>buffer_count</code> (0..100).<span class="where">detail::Network::Network · src/network.cpp</span></div></li>
+    <li><div><b>Read the task graph and decide ORT</b> before dx-runtime sees the file. <code>resolve_ort</code> prints the scenario-1 hint or the reader WARNING. It throws <code>InvalidArgument</code> for <code>ort=off</code> on a model with two or more NPU tasks.<span class="where">read_model_graph → resolve_ort · src/model_graph.cpp</span></div></li>
+    <li><div><b>Create the engine</b> with <code>bufferCount</code>, <code>boundOption</code>, <code>devices</code>, <code>useORT</code> and <code>showModelInfo=false</code>. A dx-runtime exception goes through <code>load_error</code>. An NPU memory failure becomes <code>OutOfDeviceMemory</code>, and the message includes each device's free MiB. Anything else becomes <code>LoadFailed</code>.<span class="where">Network::Network · load_error · free_memory_report</span></div></li>
+    <li><div><b>Fill <code>NetworkInfo</code>.</b> This covers the model name, version and compile type, PPU, effective ORT, and the input and output tensors with their offsets in the block. For multi-input models it also records <code>input_parts_</code>. Then <code>buffer_count</code> (0 means <code>$DXRT_TASK_MAX_LOAD</code>, or 6), <code>max_in_flight = buffer_count × device_count</code>, and <code>result_buffers = max_in_flight + extra</code>.<span class="where">Network::build_info</span></div></li>
+    <li><div><b>Check what dx-runtime really loaded.</b> <code>loaded_tasks = GetTaskOrder().size()</code> is compared with the graph. If the model needs ORT but dx-runtime dropped it, the result is <code>LoadFailed</code>. Otherwise you get a warning.<span class="where">check_loaded · src/model_graph.cpp</span></div></li>
+    <li><div><b>Allocate everything once.</b> The result pool, the low-buffer watch (only when there are at least 2 spare blocks), the <code>max_in_flight</code> job slots and, in async mode, <code>RegisterCallback</code>. The callback only calls <code>complete()</code>.<span class="where">Network::Network</span></div></li>
+    <li><div><b>CallbackInference only:</b> start one <code>Lane</code> thread per network.<span class="where">CallbackInference::CallbackInference · src/callback_inference.cpp</span></div></li>
+  </ol>
+  </div>
+</section>
+
+<section id="feed">
+  <h3>b. Feeding one input</h3>
+  <div class="col">
+  <ol class="steps">
+    <li><div><code>feed</code> and <code>try_feed</code> look up the network (<code>UnknownNetwork</code> if the name doesn't exist) and call the virtual <code>check_can_feed</code>. CallbackInference uses that hook to throw <code>NoCallback</code> until <code>set_callback</code> has been called.<span class="where">InferenceBase::feed / try_feed</span></div></li>
+    <li><div>A null input gives <code>InvalidArgument</code>, and a byte count other than <code>input_size</code> gives <code>BadInputSize</code>.<span class="where">Network::submit</span></div></li>
+    <li><div><b>Take a job slot.</b> <code>feed</code> waits on <code>slot_cv_</code>, and <code>try_feed</code> returns <code>false</code> instead. If the network is closing, it throws <code>ShuttingDown</code>.<span class="where">Network::acquire_job</span></div></li>
+    <li><div><b>Take a result block</b> from the pool. This waits only when your application is holding every block.<span class="where">BufferPool::acquire / try_acquire</span></div></li>
+    <li><div>Assign <code>seq</code> (an atomic counter), store <code>user_arg</code>, count <code>fed_</code>, and call <code>stats_.on_feed</code>.<span class="where">Network::submit</span></div></li>
+    <li><div><b>Hand the job to dx-runtime</b> with the block as the output buffer.
+      <ul>
+        <li><b>Async:</b> <code>RunAsync(in, job, block)</code>. <code>job</code> must not be touched after this call, because it may already be complete.</li>
+        <li><b>Sync:</b> <code>Run</code> or <code>RunMultiInput</code> returns the outputs, and <code>complete()</code> runs on this thread.</li>
+        <li><b>Multi-input:</b> <code>split_input</code> turns your one back-to-back buffer into one pointer per tensor.</li>
+      </ul>
+      <span class="where">Network::submit · split_input</span></div></li>
+    <li><div>If dx-runtime throws, <code>complete(job, nullptr, InferenceFailed)</code> still runs. That sequence number still gets a <code>Result</code>, so FIFO delivery never stalls.<span class="where">Network::submit</span></div></li>
+  </ol>
+  </div>
+</section>
+
+<section id="complete">
+  <h3>c. Completion: from device outputs to a queued Result</h3>
+  <div class="col">
+  <ol class="steps">
+    <li><div><b>Build tensor views over the block.</b>
+      <ul>
+        <li>Outputs that dx-runtime wrote inside the block are used in place, with zero copies.</li>
+        <li>Anything dx-runtime left in its own memory, which is valid only during the callback, is copied into the block behind the rest.</li>
+        <li>If it doesn't fit, the result carries <code>InferenceFailed</code>.</li>
+        <li>When no runtime metadata is available, the static offsets in <code>NetworkInfo</code> are used.</li>
+      </ul>
+      <span class="where">Network::make_views</span></div></li>
+    <li><div>Record the stats, then build the <code>Result</code>. The block moves from the job into the result.<span class="where">stats_.on_complete · detail::ResultAccess::make</span></div></li>
+    <li><div><b>Free the slot first.</b> <code>release_job</code> notifies <code>slot_cv_</code>, so a waiting feeder submits the next job right away.<span class="where">Network::release_job</span></div></li>
+    <li><div>Push the result into the reorder buffer under its <code>seq</code>, and count <code>completed_</code>. That count is what <code>wait_completed</code> waits for.<span class="where">ReorderBuffer::push · Network::complete</span></div></li>
+  </ol>
+  <div class="note">In async mode this runs on a dx-runtime thread, so <code>complete()</code> is kept short: it builds the views, frees the slot and pushes. Your code never runs on that thread. Callbacks run on the Lane thread instead.</div>
+  </div>
+</section>
+<section id="fifo">
+  <h3>d. Out-of-order completion, FIFO delivery</h3>
+  <div class="col"><p>With several jobs in flight across NPU cores, jobs finish in any order. <code>ReorderBuffer</code> is a <code>std::map</code> keyed by <code>seq</code>, plus a <code>next</code> counter. Only the item at <code>next</code> can be popped. Example: jobs 0–3 are fed, and they finish in the order 2, 0, 3, 1.</p></div>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Event</th><th>Waiting in the map</th><th>next</th><th>Released to you</th></tr></thead>
+    <tbody>
+      <tr><td>job 2 completes</td><td class="num"><span class="held">{2}</span></td><td class="num">0</td><td>nothing: 0 is missing</td></tr>
+      <tr><td>job 0 completes</td><td class="num"><span class="held">{0, 2}</span></td><td class="num">0 → 1</td><td><span class="rel">0</span></td></tr>
+      <tr><td>job 3 completes</td><td class="num"><span class="held">{2, 3}</span></td><td class="num">1</td><td>nothing: 1 is missing</td></tr>
+      <tr><td>job 1 completes</td><td class="num"><span class="held">{1, 2, 3}</span></td><td class="num">1 → 4</td><td><span class="rel">1, 2, 3</span> back to back</td></tr>
+    </tbody>
+  </table></div>
+  <div class="col"><p>A finished job that's waiting in the map has already freed its <b>slot</b>, so the device keeps working. It still holds its <b>result block</b> until it's delivered and dropped. The <code>reorder wait</code> statistic measures exactly this time spent waiting.<span class="where">include/dxinfer/reorder_buffer.hpp · push / pop / take_locked</span></p></div>
+</section>
+
+<section id="deliver">
+  <h3>e. Delivery: pulling vs callbacks</h3>
+  <div class="two">
+    <div class="box api"><div class="h">BlockingInference</div><div class="d">
+      <p style="margin-top:6px"><code>get</code> (blocks), <code>try_get</code> (never blocks) and <code>get_for</code> (timeout) all call <code>results().pop / try_pop / pop_for</code>. After a pop, <code>hand_over</code> calls <code>on_delivered</code> and <code>on_consumed</code> at once. The result's block stays in use until you drop the <code>Result</code>.</p>
+      <p>A closed queue makes <code>get</code> throw <code>ShuttingDown</code>.</p>
+      <span class="where">src/blocking_inference.cpp</span></div></div>
+    <div class="box api"><div class="h">CallbackInference</div><div class="d">
+      <p style="margin-top:6px">Each network has a <code>Lane</code> thread that loops through <code>run()</code>:</p>
+      <ol style="margin-top:6px; padding-left:1.2em">
+        <li><code>pop</code></li>
+        <li><code>on_delivered</code></li>
+        <li>copy the callback pointer under the lane mutex</li>
+        <li>call your callback; exceptions are caught, printed and counted in <code>callback_errors</code></li>
+        <li><code>r = Result()</code> gives the block back</li>
+        <li><code>on_consumed</code></li>
+      </ol>
+      <p><code>wait_idle</code> waits until consumed equals fed, for every network.</p>
+      <span class="where">src/callback_inference.cpp</span></div></div>
+  </div>
+</section>
+
+<section id="memory">
+  <h3>f. Result memory: blocks, copy_out and the warning</h3>
+  <div class="col">
+  <ul>
+    <li><b>Pool size:</b> <code>max_in_flight + extra_result_buffers</code>, where -1 means the same as max_in_flight. Blocks are allocated once, in the constructor. Each block is <code>output_size</code> bytes, rounded up to 64.</li>
+    <li><b>Who holds a block:</b> a job in flight, a result waiting in the reorder buffer, or a <code>Result</code> you're holding. A <code>PooledBuffer</code> gives its block back when it's destroyed (<code>reset</code>), on whatever thread drops it.</li>
+    <li><b>Holding too many:</b> beyond the extra blocks, the device gets fewer jobs, <code>feed</code> waits and <code>try_feed</code> returns <code>false</code>. <code>Result::copy_out()</code> makes a heap copy (<code>uses_pool() == false</code>) so the block goes back immediately.</li>
+    <li><b>Warning:</b> <code>PoolWarner</code> prints when the free block count drops to 1, and a recovery line when it climbs back to 3. It prints at most once per second per network. It's installed only when the pool has at least 2 spare blocks, and is removed before shutdown.</li>
+  </ul>
+  <span class="where">buffer_pool.hpp · result.hpp · pool_warning.cpp · Network::Network</span>
+  </div>
+</section>
+
+<section id="ort">
+  <h3>g. ONNX Runtime and the task graph</h3>
+  <div class="col">
+  <p>dx-runtime with <code>useORT=false</code> loads only the first NPU task of a model. So the ORT setting is decided from the model's own task graph, which is read from the <code>.dxnn</code> before loading. This is step 4 of the load walkthrough.</p>
+  <ul>
+    <li><b><code>read_model_graph</code></b> reads only the header and the graph JSON, never the weights. It returns <code>NpuOnly</code>, <code>SingleNpuWithCpu</code>, <code>MultiNpu</code> or <code>Unknown</code> with a reason. This is the only code that knows the file format: v7–v9 are supported, and v6 or v10+ return <code>Unknown</code>.</li>
+    <li><b><code>resolve_ort</code></b> applies <code>OrtMode</code>:
+      <ul>
+        <li><code>Auto</code> turns ORT on when CPU tasks exist and prints a hint that <code>Off</code> is faster.</li>
+        <li><code>Off</code> on a model with two or more NPU tasks is rejected.</li>
+        <li>An unreadable graph gives a WARNING plus a safe default.</li>
+      </ul></li>
+    <li><b><code>check_loaded</code></b> runs after loading. It compares the graph with <code>GetTaskOrder()</code> and <code>IsOrtConfigured()</code>.</li>
+    <li><b>Where it shows up:</b> <code>print_info</code> shows <code>task graph</code> and <code>ONNX Runtime: requested … → …</code>.</li>
+  </ul>
+  <span class="where">model_graph.hpp/.cpp · tests/test_model_graph.cpp · README "ONNX Runtime (CPU tasks)"</span>
+  </div>
+</section>
+
+<section id="errors">
+  <h3>h. Errors: thrown or carried in the Result</h3>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Where</th><th>What happens</th><th>Codes</th></tr></thead>
+    <tbody>
+      <tr><td>constructor</td><td>throws <code>InferenceError</code>; all-or-nothing</td><td><code>InvalidArgument</code> · <code>DuplicateName</code> · <code>LoadFailed</code> · <code>OutOfDeviceMemory</code></td></tr>
+      <tr><td>feed / try_feed</td><td>throws on misuse or shutdown</td><td><code>UnknownNetwork</code> · <code>NoCallback</code> · <code>InvalidArgument</code> · <code>BadInputSize</code> · <code>ShuttingDown</code></td></tr>
+      <tr><td>one inference fails</td><td><b>not thrown</b>: a <code>Result</code> with <code>status()</code> set, in its FIFO position</td><td><code>InferenceFailed</code> (dx-runtime threw, or an output didn't fit the block)</td></tr>
+      <tr><td>get()</td><td>throws once the queue is closed</td><td><code>ShuttingDown</code></td></tr>
+      <tr><td>your callback throws</td><td>caught on the Lane, printed, counted</td><td><code>callback_errors(name)</code></td></tr>
+    </tbody>
+  </table></div>
+  <div class="col"><span class="where">include/dxinfer/error.hpp · what() reads "[dxinfer] network 'x': Code: message"</span></div>
+</section>
+
+<section id="shutdown">
+  <h3>i. Shutdown order</h3>
+  <div class="col">
+  <ol class="steps">
+    <li><div>The destructor calls <code>close_all()</code>. In CallbackInference this happens through <code>stop_lanes()</code>; BlockingInference reaches it from <code>~InferenceBase</code>.<span class="where">InferenceBase::close_all</span></div></li>
+    <li><div>For each network, <code>close()</code> runs these steps in order:
+      <ul>
+        <li>remove the low-buffer watch</li>
+        <li>set <code>closing_</code> and wake feeders that are waiting for a slot; they throw <code>ShuttingDown</code></li>
+        <li>shut down the pool, which also wakes feeders waiting for a block</li>
+        <li>wait until every job slot is free again, meaning all in-flight jobs have finished</li>
+        <li>close the reorder buffer</li>
+      </ul>
+      <span class="where">Network::close</span></div></li>
+    <li><div>Lane threads deliver whatever is still queued. Then <code>pop</code> returns false, and the threads exit and are joined.<span class="where">CallbackInference::stop_lanes · run</span></div></li>
+    <li><div><code>~Network</code> unregisters the async callback, and the engine is released. Any <code>Result</code> you still hold stays valid, because its block keeps the pool alive.<span class="where">Network::~Network</span></div></li>
+  </ol>
+  </div>
+</section>
+
+<section id="threads">
+  <h2>5. Threads at a glance</h2>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Thread</th><th>Runs</th><th>Locks it takes</th></tr></thead>
+    <tbody>
+      <tr><td>Your feeder thread(s)</td><td><code>feed</code> → <code>submit</code> → <code>acquire_job</code>, pool acquire, <code>RunAsync</code> / <code>Run</code>. In sync mode it also runs <code>complete()</code>.</td><td><code>slot_m_</code> · pool <code>m_</code> · <code>count_m_</code> · reorder <code>m_</code> (sync)</td></tr>
+      <tr><td>dx-runtime callback (async)</td><td>the lambda registered in the <code>Network</code> constructor → <code>complete()</code></td><td><code>slot_m_</code> · reorder <code>m_</code> · <code>count_m_</code></td></tr>
+      <tr><td>Your consumer (Blocking)</td><td><code>get / try_get / get_for</code> → <code>pop</code> → <code>hand_over</code>. Dropping a <code>Result</code> returns its block.</td><td>reorder <code>m_</code> · <code>count_m_</code> · pool <code>m_</code> (on drop)</td></tr>
+      <tr><td>Lane, one per network (Callback)</td><td><code>CallbackInference::run</code>: pop → your callback → drop → <code>on_consumed</code></td><td>reorder <code>m_</code> · lane <code>m</code> · <code>count_m_</code> · pool <code>m_</code></td></tr>
+      <tr><td>Destroying thread</td><td><code>close_all</code> → <code>Network::close</code> → join the Lanes</td><td><code>slot_m_</code> · pool <code>m_</code> · reorder <code>m_</code></td></tr>
+    </tbody>
+  </table></div>
+  <div class="col"><p>No lock is held while calling into dx-runtime, while calling your callback, or while the pool's level observer runs. The observer is invoked after the pool lock is released.</p></div>
+</section>
+
+<section id="reading">
+  <h2>6. Suggested reading order</h2>
+  <div class="col">
+  <ol class="read">
+    <li><code>include/dxinfer/types.hpp</code>: the vocabulary (spec, options, config, info, graph types).</li>
+    <li><code>include/dxinfer/error.hpp</code>: ErrorCode, Status, InferenceError.</li>
+    <li><code>include/dxinfer/inference_base.hpp</code>, then <code>src/inference_base.cpp</code>: the public surface and all-or-nothing loading.</li>
+    <li><code>src/network.hpp</code>: the members of one network. This is the heart of the library.</li>
+    <li><code>src/network.cpp</code>, in this order: the constructor, <code>submit</code>, <code>complete</code>, <code>make_views</code>, <code>close</code>.</li>
+    <li><code>include/dxinfer/reorder_buffer.hpp</code>: how FIFO order is restored, in about 100 lines.</li>
+    <li><code>include/dxinfer/buffer_pool.hpp</code> and <code>result.hpp</code>: block lifetime and <code>copy_out</code>.</li>
+    <li><code>src/blocking_inference.cpp</code> and <code>src/callback_inference.cpp</code>: the two delivery styles.</li>
+    <li><code>include/dxinfer/model_graph.hpp</code>, then <code>src/model_graph.cpp</code>: the ORT decision.</li>
+    <li><code>stats.hpp/.cpp</code> and <code>pool_warning.*</code>: measurement and the warning.</li>
+    <li><code>tests/*.cpp</code>: each building block exercised on the host, so you can read and run them as examples.</li>
+    <li><code>examples/demo_common.hpp</code> and the two demos: end-to-end use with FIFO and <code>user_arg</code> checks.</li>
+  </ol>
+  </div>
+</section>
+
+<footer class="col">Written from the source of <code>dx-agent-dev/20261117-172801_claude_opus55_multinet_inference_lib</code> on 2026-11-19. Function and file names are exact; line numbers are left out on purpose so the page stays valid while the code changes. The README has the API table and the <code>OrtMode</code> decision table. Feature-level overview for reviewers: <a href="features.html">features.html</a> (<a href="https://claude.ai/artifact/B5KEYquhkL6hxXMb9CM653">online copy</a>).</footer>
+</div>

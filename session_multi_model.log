@@ -1,0 +1,337 @@
+
+=== multi-model demo: RED (2026-11-27 09:41:36)
+/home/user/deepx/dx-all-suite/dx-runtime/dx_app/dx-agent-dev/20261117-172801_claude_opus55_multinet_inference_lib/tests/test_multi_model_post.cpp:4:10: fatal error: postprocess.hpp: No such file or directory
+
+=== multi-model demo: GREEN postprocess (2026-11-27 09:42:18)
+[PASS] letterbox_matches_dx_app
+[PASS] e2e_rows_threshold_and_bad_class
+[PASS] unletterbox_maps_to_original_and_clamps
+[PASS] nms_suppresses_overlaps
+[PASS] dfl_grid_decode
+[PASS] topk_softmax_from_logits
+[PASS] topk_keeps_an_existing_distribution
+[PASS] integer_output_is_the_class_id
+[PASS] dxrt_dtype_mapping
+test_multi_model_post: PASS (0 failed checks)
+
+=== multi-model demo: compile checks vision / factory (2026-11-27 09:44:02)
+clean: vision.cpp
+clean: model_factory.hpp
+
+=== multi-model demo: build (2026-11-27 09:45:01)
+[ 78%] Building CXX object CMakeFiles/multi_model_demo.dir/examples/multi_model/vision.cpp.o
+[ 81%] Building CXX object CMakeFiles/multi_model_demo.dir/examples/multi_model/multi_model_demo.cpp.o
+[ 84%] Building CXX object CMakeFiles/multi_model_demo.dir/examples/multi_model/postprocess.cpp.o
+[100%] Linking CXX executable multi_model_demo
+[100%] Built target multi_model_demo
+build/multi_model_demo 474384 bytes
+
+=== multi-model demo: scripts (2026-11-27 09:45:39)
+bash -n: OK
+object detection images -> /home/user/deepx/dx-all-suite/dx-runtime/dx_app/dx-agent-dev/20261117-172801_claude_opus55_multinet_inference_lib/examples/multi_model/images/image_object_detection
+  got   000000000139.jpg
+  got   000000000285.jpg
+  got   000000000632.jpg
+  got   000000000724.jpg
+  got   000000000776.jpg
+  got   000000000785.jpg
+  got   000000000802.jpg
+  got   000000000872.jpg
+  got   000000000885.jpg
+  got   000000001000.jpg
+  got   000000001268.jpg
+  got   000000039769.jpg
+classification images   -> /home/user/deepx/dx-all-suite/dx-runtime/dx_app/dx-agent-dev/20261117-172801_claude_opus55_multinet_inference_lib/examples/multi_model/images/image_classification
+curl: (60) SSL certificate problem: self-signed certificate in certificate chain
+More details here: https://curl.se/docs/sslcerts.html
+
+curl failed to verify the legitimacy of the server and therefore could not
+establish a secure connection to it. To learn more about this situation and
+how to fix it, please visit the web page mentioned above.
+  FAIL  https://raw.githubusercontent.com/EliSchwartz/imagenet-sample-images/master/n01440764_tench.JPEG
+curl: (60) SSL certificate problem: self-signed certificate in certificate chain
+More details here: https://curl.se/docs/sslcerts.html
+
+curl failed to verify the legitimacy of the server and therefore could not
+establish a secure connection to it. To learn more about this situation and
+how to fix it, please visit the web page mentioned above.
+  FAIL  https://raw.githubusercontent.com/EliSchwartz/imagenet-sample-images/master/n01820546_lorikeet.JPEG
+curl: (60) SSL certificate problem: self-signed certificate in certificate chain
+More details here: https://curl.se/docs/sslcerts.html
+
+curl failed to verify the legitimacy of the server and therefore could not
+establish a secure connection to it. To learn more about this situation and
+how to fix it, please visit the web page mentioned above.
+  FAIL  https://raw.githubusercontent.com/EliSchwartz/imagenet-sample-images/master/n02093647_Bedlington_terrier.JPEG
+curl: (60) SSL certificate problem: self-signed certificate in certificate chain
+More details here: https://curl.se/docs/sslcerts.html
+
+curl failed to verify the legitimacy of the server and therefore could not
+establish a secure connection to it. To learn more about this situation and
+how to fix it, please visit the web page mentioned above.
+  FAIL  https://raw.githubusercontent.com/EliSchwartz/imagenet-sample-images/master/n02114712_red_wolf.JPEG
+curl: (60) SSL certificate problem: self-signed certificate in certificate chain
+More details here: https://curl.se/docs/sslcerts.html
+
+curl failed to verify the legitimacy of the server and therefore could not
+establish a secure connection to it. To learn more about this situation and
+how to fix it, please visit the web page mentioned above.
+  FAIL  https://raw.githubusercontent.com/EliSchwartz/imagenet-sample-images/master/n02447366_badger.JPEG
+curl: (60) SSL certificate problem: self-signed certificate in certificate chain
+More details here: https://curl.se/docs/sslcerts.html
+
+curl failed to verify the legitimacy of the server and therefore could not
+establish a secure connection to it. To learn more about this situation and
+how to fix it, please visit the web page mentioned above.
+  FAIL  https://raw.githubusercontent.com/EliSchwartz/imagenet-sample-images/master/n02870880_bookcase.JPEG
+curl: (60) SSL certificate problem: self-signed certificate in certificate chain
+More details here: https://curl.se/docs/sslcerts.html
+
+curl failed to verify the legitimacy of the server and therefore could not
+establish a secure connection to it. To learn more about this situation and
+how to fix it, please visit the web page mentioned above.
+  FAIL  https://raw.githubusercontent.com/EliSchwartz/imagenet-sample-images/master/n03255030_dumbbell.JPEG
+curl: (60) SSL certificate problem: self-signed certificate in certificate chain
+More details here: https://curl.se/docs/sslcerts.html
+
+curl failed to verify the legitimacy of the server and therefore could not
+establish a secure connection to it. To learn more about this situation and
+how to fix it, please visit the web page mentioned above.
+  FAIL  https://raw.githubusercontent.com/EliSchwartz/imagenet-sample-images/master/n03697007_lumbermill.JPEG
+curl: (60) SSL certificate problem: self-signed certificate in certificate chain
+More details here: https://curl.se/docs/sslcerts.html
+
+curl failed to verify the legitimacy of the server and therefore could not
+establish a secure connection to it. To learn more about this situation and
+how to fix it, please visit the web page mentioned above.
+  FAIL  https://raw.githubusercontent.com/EliSchwartz/imagenet-sample-images/master/n03950228_pitcher.JPEG
+curl: (60) SSL certificate problem: self-signed certificate in certificate chain
+More details here: https://curl.se/docs/sslcerts.html
+
+curl failed to verify the legitimacy of the server and therefore could not
+establish a secure connection to it. To learn more about this situation and
+how to fix it, please visit the web page mentioned above.
+  FAIL  https://raw.githubusercontent.com/EliSchwartz/imagenet-sample-images/master/n04275548_spider_web.JPEG
+curl: (60) SSL certificate problem: self-signed certificate in certificate chain
+More details here: https://curl.se/docs/sslcerts.html
+
+curl failed to verify the legitimacy of the server and therefore could not
+establish a secure connection to it. To learn more about this situation and
+how to fix it, please visit the web page mentioned above.
+  FAIL  https://raw.githubusercontent.com/EliSchwartz/imagenet-sample-images/master/n04591157_Windsor_tie.JPEG
+curl: (60) SSL certificate problem: self-signed certificate in certificate chain
+More details here: https://curl.se/docs/sslcerts.html
+
+curl failed to verify the legitimacy of the server and therefore could not
+establish a secure connection to it. To learn more about this situation and
+how to fix it, please visit the web page mentioned above.
+  FAIL  https://raw.githubusercontent.com/EliSchwartz/imagenet-sample-images/master/n13054560_bolete.JPEG
+done: 12 detection images, 0 classification images (12 failed)
+get_images.sh exit=1
+      1                  cannot open `images/image_classification/*' (No such file or directory)
+     12 JPEG image data
+--- second run (must keep existing files)
+curl: (60) SSL certificate problem: self-signed certificate in certificate chain
+More details here: https://curl.se/docs/sslcerts.html
+
+curl failed to verify the legitimacy of the server and therefore could not
+establish a secure connection to it. To learn more about this situation and
+how to fix it, please visit the web page mentioned above.
+  FAIL  https://raw.githubusercontent.com/EliSchwartz/imagenet-sample-images/master/n01440764_tench.JPEG
+curl: (60) SSL certificate problem: self-signed certificate in certificate chain
+More details here: https://curl.se/docs/sslcerts.html
+
+curl failed to verify the legitimacy of the server and therefore could not
+establish a secure connection to it. To learn more about this situation and
+how to fix it, please visit the web page mentioned above.
+  FAIL  https://raw.githubusercontent.com/EliSchwartz/imagenet-sample-images/master/n01820546_lorikeet.JPEG
+curl: (60) SSL certificate problem: self-signed certificate in certificate chain
+More details here: https://curl.se/docs/sslcerts.html
+
+curl failed to verify the legitimacy of the server and therefore could not
+establish a secure connection to it. To learn more about this situation and
+how to fix it, please visit the web page mentioned above.
+  FAIL  https://raw.githubusercontent.com/EliSchwartz/imagenet-sample-images/master/n02093647_Bedlington_terrier.JPEG
+curl: (60) SSL certificate problem: self-signed certificate in certificate chain
+More details here: https://curl.se/docs/sslcerts.html
+
+curl failed to verify the legitimacy of the server and therefore could not
+establish a secure connection to it. To learn more about this situation and
+how to fix it, please visit the web page mentioned above.
+  FAIL  https://raw.githubusercontent.com/EliSchwartz/imagenet-sample-images/master/n02114712_red_wolf.JPEG
+curl: (60) SSL certificate problem: self-signed certificate in certificate chain
+More details here: https://curl.se/docs/sslcerts.html
+
+curl failed to verify the legitimacy of the server and therefore could not
+establish a secure connection to it. To learn more about this situation and
+how to fix it, please visit the web page mentioned above.
+  FAIL  https://raw.githubusercontent.com/EliSchwartz/imagenet-sample-images/master/n02447366_badger.JPEG
+curl: (60) SSL certificate problem: self-signed certificate in certificate chain
+More details here: https://curl.se/docs/sslcerts.html
+
+curl failed to verify the legitimacy of the server and therefore could not
+establish a secure connection to it. To learn more about this situation and
+how to fix it, please visit the web page mentioned above.
+  FAIL  https://raw.githubusercontent.com/EliSchwartz/imagenet-sample-images/master/n02870880_bookcase.JPEG
+curl: (60) SSL certificate problem: self-signed certificate in certificate chain
+More details here: https://curl.se/docs/sslcerts.html
+
+curl failed to verify the legitimacy of the server and therefore could not
+establish a secure connection to it. To learn more about this situation and
+how to fix it, please visit the web page mentioned above.
+  FAIL  https://raw.githubusercontent.com/EliSchwartz/imagenet-sample-images/master/n03255030_dumbbell.JPEG
+curl: (60) SSL certificate problem: self-signed certificate in certificate chain
+More details here: https://curl.se/docs/sslcerts.html
+
+curl failed to verify the legitimacy of the server and therefore could not
+establish a secure connection to it. To learn more about this situation and
+how to fix it, please visit the web page mentioned above.
+  FAIL  https://raw.githubusercontent.com/EliSchwartz/imagenet-sample-images/master/n03697007_lumbermill.JPEG
+curl: (60) SSL certificate problem: self-signed certificate in certificate chain
+More details here: https://curl.se/docs/sslcerts.html
+
+curl failed to verify the legitimacy of the server and therefore could not
+establish a secure connection to it. To learn more about this situation and
+how to fix it, please visit the web page mentioned above.
+  FAIL  https://raw.githubusercontent.com/EliSchwartz/imagenet-sample-images/master/n03950228_pitcher.JPEG
+curl: (60) SSL certificate problem: self-signed certificate in certificate chain
+More details here: https://curl.se/docs/sslcerts.html
+
+curl failed to verify the legitimacy of the server and therefore could not
+establish a secure connection to it. To learn more about this situation and
+how to fix it, please visit the web page mentioned above.
+  FAIL  https://raw.githubusercontent.com/EliSchwartz/imagenet-sample-images/master/n04275548_spider_web.JPEG
+curl: (60) SSL certificate problem: self-signed certificate in certificate chain
+More details here: https://curl.se/docs/sslcerts.html
+
+curl failed to verify the legitimacy of the server and therefore could not
+establish a secure connection to it. To learn more about this situation and
+how to fix it, please visit the web page mentioned above.
+  FAIL  https://raw.githubusercontent.com/EliSchwartz/imagenet-sample-images/master/n04591157_Windsor_tie.JPEG
+curl: (60) SSL certificate problem: self-signed certificate in certificate chain
+More details here: https://curl.se/docs/sslcerts.html
+
+curl failed to verify the legitimacy of the server and therefore could not
+establish a secure connection to it. To learn more about this situation and
+how to fix it, please visit the web page mentioned above.
+  FAIL  https://raw.githubusercontent.com/EliSchwartz/imagenet-sample-images/master/n13054560_bolete.JPEG
+done: 12 detection images, 0 classification images (12 failed)
+
+=== get_images.sh after TLS-hint change (classification images fetched via Windows for host testing) (2026-11-27 09:46:24)
+bash -n: OK
+  have  n13054560_bolete.JPEG
+done: 12 detection images, 12 classification images (0 failed)
+exit=0
+     12                JPEG image data
+      1              JPEG image data
+      2             JPEG image data
+      1            JPEG image data
+      4           JPEG image data
+      2         JPEG image data
+      1        JPEG image data
+      1 JPEG image data
+--- TLS hint check (temp dir, expect one hint, not 12 curl errors)
+13
+0
+
+=== multi-model demo: error paths (2026-11-27 09:47:11)
+--- run.sh without models
+[error] missing /home/user/deepx/dx-all-suite/dx-runtime/dx_app/dx-agent-dev/20261117-172801_claude_opus55_multinet_inference_lib/examples/multi_model/models/yolo26-n_640x640.dxnn (download it from the DEEPX model zoo, see README.md)
+[error] missing /home/user/deepx/dx-all-suite/dx-runtime/dx_app/dx-agent-dev/20261117-172801_claude_opus55_multinet_inference_lib/examples/multi_model/models/resnet18_224x224.dxnn (download it from the DEEPX model zoo, see README.md)
+exit=1
+--- demo with a missing model
+[error] model not found: /nonexistent.dxnn
+        Download it from the DEEPX model zoo into models/ (see README.md), or pass --det / --cls.
+exit=1
+--- demo --help (first 3 lines)
+Usage: ../../build/multi_model_demo [options]
+  --det MODEL      object detection model   (default models/yolo26-n_640x640.dxnn)
+  --cls MODEL      classification model     (default models/resnet18_224x224.dxnn)
+--- demo --count 5 (below minimum)
+[error] --count must be at least 10
+exit=1
+
+=== multi-model demo: images checked before load (2026-11-27 09:47:27)
+[ 30%] Built target dxinfer_core
+[ 69%] Built target dxinfer
+[100%] Built target multi_model_demo
+--- 1 image in the detection folder (placeholder model files)
+[error] det: need at least 10 images in /tmp/tmp.hDTdxPArAx/few, found 1 (run ./get_images.sh)
+exit=1
+--- missing image folder
+[error] image directory not found: images/image_object_detection
+exit=1
+--- images OK, placeholder models: expect a clean load error from dxinfer (no NPU / not a .dxnn)
+[dxinfer] det: WARNING: could not read the task graph of /tmp/tmp.hDTdxPArAx/det.dxnn (truncated file (no 8-byte header)). ORT: on (safe default). Graph-based checks are disabled for this network. This usually means the .dxnn format changed: please update dxinfer's model_graph reader (src/model_graph.cpp).
+[dxinfer] network 'det': LoadFailed: /tmp/tmp.hDTdxPArAx/det.dxnn: SERVICE_IO: [dxrt-exception] Service input & output exception {dxrt service is not running}
+exit=1
+
+=== multi-model demo: host overlay smoke test (2026-11-27 09:47:49)
+images/image_object_detection/000000039769.jpg: 640x480 -> input bytes 1228800, scale 1.0000 pad (0,80), box1 (2,2)-(638,478)
+images/image_object_detection/000000000285.jpg: 586x640 -> input bytes 1228800, scale 1.0000 pad (27,0), box1 (2,2)-(584,638)
+classification input bytes 150528 (224x224x3 = 150528)
+cls_n01440764_tench.jpg 77221 bytes
+det_000000000285.jpg 250480 bytes
+det_000000039769.jpg 183303 bytes
+
+=== multi-model demo: final verification (2026-11-27 09:48:16)
+--- clean rebuild, all targets
+compiler diagnostics: 0
+100% tests passed, 0 tests failed out of 7
+--- strict compile of the new sources
+clean: examples/multi_model/multi_model_demo.cpp
+clean: examples/multi_model/vision.cpp
+clean: examples/multi_model/postprocess.cpp
+clean: tests/test_multi_model_post.cpp
+--- scripts
+bash -n: OK
+--- deliverables
+README.md get_images.sh images labels.hpp model_factory.hpp multi_model_demo.cpp output_host_smoke postprocess.cpp postprocess.hpp run.sh vision.cpp vision.hpp 
+--- copy-out gate (outside the suite, without build/ and images)
+diagnostics: 0
+100% tests passed, 0 tests failed out of 7
+multi_model_demo built outside the suite
+(no suite path dependencies above = OK)
+
+=== get_images.sh --count: RED against the current script (2026-11-27 10:17:23)
+count option present: 0
+COCO list present: 1
+COCO ids in script: 12 (need 50)
+
+=== get_images.sh --count: GREEN (2026-11-27 10:17:55)
+bash -n: OK
+--- default (25): 25 detection, 25 classification URLs
+-n 1: 1 det, 1 cls, distinct 2
+-n 10: 10 det, 10 cls, distinct 20
+-n 20: 20 det, 20 cls, distinct 40
+-n 50: 50 det, 50 cls, distinct 100
+--- -n 10 classification classes (spread):
+n01440764_tench.JPEG n01871265_tusker.JPEG n02098286_West_Highland_white_terrier.JPEG n02281406_sulphur_butterfly.JPEG n02795169_barrel.JPEG n03291819_envelope.JPEG n03761084_microwave.JPEG n04131690_saltshaker.JPEG n04487081_trolleybus.JPEG n13054560_bolete.JPEG 
+--- invalid values
+[error] --count must be 1..50, got 0
+  -n '0' -> exit 1
+[error] --count must be 1..50, got 51
+  -n '51' -> exit 1
+[error] --count must be a whole number, got 'abc'
+  -n 'abc' -> exit 1
+[error] --count must be a whole number, got ''
+  -n '' -> exit 1
+[error] unknown option '--bogus' (see --help)
+  --bogus -> exit 1
+--- --help (first 3 lines)
+Download test images for multi_model_demo into this folder:
+  images/image_object_detection/  N photos from COCO val2017      (cocodataset.org, CC BY 4.0 / Flickr terms)
+  images/image_classification/    N ImageNet samples, one per class
+--- real download, -n 20 into a temp dir (COCO is plain HTTP; the HTTPS ImageNet part hits this host's TLS issue)
+done: 20/20 detection images, 0/20 classification images (20 failed)
+[hint] HTTPS certificate verification failed. This network probably inspects TLS traffic with its
+exit=1
+  detection JPEGs on disk: 20
+--- rerun keeps files
+  already present: 20
+
+=== get_images.sh --count: verify (2026-11-27 10:18:35)
+bash -n: OK (get_images.sh, run.sh)
+run.sh calls: 27:    ./get_images.sh
+default count in script: COUNT=25
+detection list size: 50, classification list size: 50

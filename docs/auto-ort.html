@@ -1,0 +1,124 @@
+<title>Auto ORT Decision</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap">
+<style>
+/* Layout: one 16:9 "slide" — headline, a 3-step flow, three case columns (case 3 emphasised), one footer strip.
+   Same tokens as architecture.html / features.html so the three docs read as one set. */
+:root {
+  --bg: #f4f6f8; --surface: #ffffff; --fg: #17212b; --muted: #566472; --line: #d3dae2; --code-bg: #eaeef2;
+  --npu: #3557b7; --npu-soft: #e5ebfa;
+  --cpu: #a65a12; --cpu-soft: #f8ead9;
+  --ok: #0d7a73; --ok-soft: #def3f0;
+  --stop: #b3261e; --stop-soft: #fbe3e1;
+  --font-display: "Space Grotesk", "Segoe UI", system-ui, sans-serif;
+  --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #0f151b; --surface: #161f28; --fg: #e3e9ef; --muted: #98a6b4; --line: #2b3844; --code-bg: #1d2832;
+  --npu: #8aa6f2; --npu-soft: #1d2a4a; --cpu: #f0a85e; --cpu-soft: #3a2914;
+  --ok: #5fd0c4; --ok-soft: #13332f; --stop: #ff8a80; --stop-soft: #3d1b1a; color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --bg: #0f151b; --surface: #161f28; --fg: #e3e9ef; --muted: #98a6b4; --line: #2b3844; --code-bg: #1d2832;
+  --npu: #8aa6f2; --npu-soft: #1d2a4a; --cpu: #f0a85e; --cpu-soft: #3a2914;
+  --ok: #5fd0c4; --ok-soft: #13332f; --stop: #ff8a80; --stop-soft: #3d1b1a; color-scheme: dark; }
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 17px; line-height: 1.5; }
+.slide { max-width: 1280px; margin: 0 auto; padding-block: 36px 40px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: flex; flex-direction: column; gap: 22px; }
+@media (min-width: 1100px) { .slide { min-height: calc(min(100vw, 1280px) * 9 / 16); justify-content: center; } }
+.eyebrow { font-family: var(--font-mono); font-size: .8rem; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+h1 { font-family: var(--font-display); font-weight: 700; font-size: clamp(1.8rem, 3.4vw, 2.7rem); line-height: 1.1; margin: 6px 0 0; text-wrap: balance; letter-spacing: -0.01em; }
+.problem { margin: 10px 0 0; font-size: 1.1rem; color: var(--muted); max-width: 70ch; }
+.problem b { color: var(--fg); }
+code { font-family: var(--font-mono); font-size: .9em; background: var(--code-bg); padding: 1px 6px; border-radius: 4px; }
+
+.flow { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 12px; }
+.step { background: var(--surface); border: 1.5px solid var(--line); border-radius: 8px; padding: 8px 14px; font-weight: 500; }
+.step small { display: block; font-weight: 400; color: var(--muted); font-size: .82rem; }
+.arrow { color: var(--muted); font-size: 1.3rem; }
+
+.cases { display: grid; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); gap: 16px; align-items: stretch; }
+.case { background: var(--surface); border: 1.5px solid var(--line); border-radius: 12px; padding: 18px 18px 20px; display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.case.key { border: 2.5px solid var(--stop); }
+.case-h { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+.case-h .n { font-family: var(--font-mono); font-size: .8rem; color: var(--muted); letter-spacing: .08em; }
+.case h2 { font-family: var(--font-display); font-size: 1.45rem; margin: 2px 0 0; line-height: 1.15; }
+.tag { font-family: var(--font-mono); font-size: .72rem; letter-spacing: .06em; text-transform: uppercase; color: var(--stop); border: 1px solid var(--stop); border-radius: 99px; padding: 1px 9px; background: var(--stop-soft); white-space: nowrap; }
+.shape { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 12px; background: var(--code-bg); border-radius: 8px; min-height: 64px; }
+.chip { font-family: var(--font-mono); font-weight: 500; font-size: .95rem; padding: 6px 12px; border-radius: 6px; border: 1.5px solid; }
+.chip.npu { color: var(--npu); border-color: var(--npu); background: var(--npu-soft); }
+.chip.cpu { color: var(--cpu); border-color: var(--cpu); background: var(--cpu-soft); }
+.shape .to { color: var(--muted); }
+.shape .ex { flex-basis: 100%; font-size: .8rem; color: var(--muted); }
+.lbl { font-family: var(--font-mono); font-size: .74rem; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.decide { display: flex; flex-direction: column; gap: 4px; }
+.verdict { font-family: var(--font-display); font-size: 1.25rem; font-weight: 600; }
+.verdict.off { color: var(--muted); }
+.verdict.on { color: var(--ok); }
+.verdict.req { color: var(--stop); }
+.why { margin: 0; font-size: .95rem; }
+.msg { font-family: var(--font-mono); font-size: .8rem; line-height: 1.45; background: var(--ok-soft); border: 1px solid var(--ok); border-radius: 8px 8px 8px 2px; padding: 10px 12px; color: var(--fg); }
+.msg b { color: var(--ok); font-weight: 500; }
+.refuse { font-size: .92rem; background: var(--stop-soft); border: 1px solid var(--stop); border-radius: 8px; padding: 9px 12px; }
+.refuse b { color: var(--stop); }
+.push { margin-top: auto; }
+
+.foot { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 10px 22px; border-top: 1px solid var(--line); padding-top: 14px; font-size: .92rem; color: var(--muted); }
+.foot b { color: var(--fg); font-weight: 600; }
+.foot a { color: var(--npu); }
+:focus-visible { outline: 2px solid var(--npu); outline-offset: 2px; }
+</style>
+
+<main class="slide">
+  <header>
+    <div class="eyebrow">dxinfer · OrtMode::Auto (default)</div>
+    <h1>Auto ORT: the right setting for every compiled model</h1>
+    <p class="problem">After compiling, a model can have CPU parts that run on ONNX Runtime (ORT). <b>With ORT off, dx-runtime runs only the first NPU part, and nothing reports it.</b> Auto mode reads the model and decides for the user.</p>
+  </header>
+
+  <div class="flow" aria-label="How auto decides">
+    <div class="step">Compiled <code>.dxnn</code></div><span class="arrow" aria-hidden="true">→</span>
+    <div class="step">dxinfer reads the model's task graph<small>before loading, header only</small></div><span class="arrow" aria-hidden="true">→</span>
+    <div class="step">One of 3 cases<small>ORT set automatically</small></div>
+  </div>
+
+  <section class="cases" aria-label="The three cases">
+    <article class="case">
+      <div class="case-h"><span class="n">CASE 1</span></div>
+      <h2>NPU only</h2>
+      <div class="shape"><span class="chip npu">NPU</span><span class="ex">the whole model runs on the NPU</span></div>
+      <div class="decide"><span class="lbl">Auto decides</span><span class="verdict off">ORT off</span>
+        <p class="why">Nothing runs on the CPU, so ORT isn't needed.</p></div>
+      <div class="decide push"><span class="lbl">User sees</span><p class="why">Nothing. The model runs as compiled.</p></div>
+    </article>
+
+    <article class="case">
+      <div class="case-h"><span class="n">CASE 2</span></div>
+      <h2>NPU + CPU</h2>
+      <div class="shape"><span class="chip npu">NPU</span><span class="to">→</span><span class="chip cpu">CPU</span><span class="ex">e.g. a final reshape, concat or TopK on the CPU</span></div>
+      <div class="decide"><span class="lbl">Auto decides</span><span class="verdict on">ORT on (default)</span>
+        <p class="why">Results are complete out of the box.</p></div>
+      <div class="decide push"><span class="lbl">User sees</span>
+        <div class="msg"><b>cpu_0</b> runs on ONNX Runtime.<br>Faster option: turn ORT <b>off</b> and run that CPU step yourself.</div></div>
+    </article>
+
+    <article class="case key">
+      <div class="case-h"><span class="n">CASE 3</span><span class="tag">why auto matters</span></div>
+      <h2>NPU → CPU → NPU</h2>
+      <div class="shape"><span class="chip npu">NPU</span><span class="to">→</span><span class="chip cpu">CPU</span><span class="to">→</span><span class="chip npu">NPU</span><span class="ex">also NPU → NPU: any model with 2+ NPU parts</span></div>
+      <div class="decide"><span class="lbl">Auto decides</span><span class="verdict req">ORT on, required</span>
+        <p class="why">Without ORT only the first NPU part runs, so the output is useless.</p></div>
+      <div class="decide push"><span class="lbl">If the user forces ORT off</span>
+        <div class="refuse"><b>Refused at load</b> with a clear error, instead of silently wrong results.</div></div>
+    </article>
+  </section>
+
+  <footer class="foot">
+    <div><b>Still the user's choice.</b> ORT can be set On or Off explicitly. Off is honoured for cases 1 and 2.</div>
+    <div><b>Unreadable model file?</b> ORT stays on and a warning names the reason.</div>
+    <div><b>Verified on the NPU.</b> yolo26-s-seg ran as case 2. Details: <a href="features.html">features.html</a> (<a href="https://claude.ai/artifact/B5KEYquhkL6hxXMb9CM653">online</a>).</div>
+  </footer>
+</main>

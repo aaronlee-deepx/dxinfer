@@ -1,0 +1,225 @@
+===== 2026-11-17 17:35:10 RED: host tests before any library header exists =====
+--- g++ -std=c++14 -Iinclude -c tests/test_reorder_buffer.cpp
+tests/test_reorder_buffer.cpp:2:10: fatal error: dxinfer/reorder_buffer.hpp: No such file or directory
+    2 | #include "dxinfer/reorder_buffer.hpp"
+      |          ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
+exit=1
+--- g++ -std=c++14 -Iinclude -c tests/test_buffer_pool.cpp
+tests/test_buffer_pool.cpp:2:10: fatal error: dxinfer/buffer_pool.hpp: No such file or directory
+    2 | #include "dxinfer/buffer_pool.hpp"
+      |          ^~~~~~~~~~~~~~~~~~~~~~~~~
+exit=1
+--- g++ -std=c++14 -Iinclude -c tests/test_stats.cpp
+tests/test_stats.cpp:2:10: fatal error: dxinfer/stats.hpp: No such file or directory
+    2 | #include "dxinfer/stats.hpp"
+      |          ^~~~~~~~~~~~~~~~~~~
+exit=1
+===== 2026-11-17 17:36:34 GREEN (core): build + run host tests directly with g++ =====
+--- test_reorder_buffer
+[PASS] shuffled_completions_come_out_in_order
+[PASS] gap_holds_back_later_items
+[PASS] move_only_items
+[PASS] multi_producer_stress
+[PASS] close_wakes_blocked_consumer
+[PASS] closed_queue_still_drains_ready_items
+[PASS] pop_for_times_out
+[PASS] duplicate_or_old_seq_throws
+test_reorder_buffer: PASS (0 failed checks)
+exit=0
+--- test_buffer_pool
+[PASS] exhausts_and_refills
+[PASS] blocks_are_distinct_aligned_and_writable
+[PASS] blocked_acquire_wakes_on_release
+[PASS] shutdown_wakes_waiters_with_empty_handle
+[PASS] handle_outlives_pool_owner
+[PASS] move_semantics
+test_buffer_pool: PASS (0 failed checks)
+exit=0
+--- test_stats
+[PASS] histogram_exact_moments
+[PASS] histogram_percentiles_within_resolution
+[PASS] histogram_reset_and_empty
+[PASS] histogram_extremes
+[PASS] disabled_recorder_records_nothing
+[PASS] enabled_recorder_measures
+test_stats: PASS (0 failed checks)
+exit=0
+===== 2026-11-17 17:39:53 BUILD: setup.sh (clean) =====
+--- bash -n setup.sh run.sh
+exit=0
+[setup] 1/4 toolchain
+        cmake 3.28.3, c++ (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0
+[setup] 2/4 dx_rt
+        dx_rt : /usr/local (v3.5.0)
+[setup] 3/4 configure + build -> /home/user/deepx/dx-all-suite/dx-runtime/dx_app/dx-agent-dev/20261117-172801_claude_opus55_multinet_inference_lib/build
+-- The CXX compiler identification is GNU 13.3.0
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Check for working CXX compiler: /usr/bin/c++ - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Success
+-- Found Threads: TRUE  
+-- Found dxrt: /usr/local/lib/libdxrt.so  
+-- Configuring done (0.8s)
+-- Generating done (0.0s)
+-- Build files have been written to: /home/user/deepx/dx-all-suite/dx-runtime/dx_app/dx-agent-dev/20261117-172801_claude_opus55_multinet_inference_lib/build
+[  5%] Building CXX object CMakeFiles/dxinfer_core.dir/src/stats.cpp.o
+[ 11%] Linking CXX static library libdxinfer_core.a
+[ 11%] Built target dxinfer_core
+[ 23%] Building CXX object CMakeFiles/dxinfer.dir/src/inference_base.cpp.o
+[ 23%] Building CXX object CMakeFiles/test_buffer_pool.dir/tests/test_buffer_pool.cpp.o
+[ 29%] Building CXX object CMakeFiles/test_reorder_buffer.dir/tests/test_reorder_buffer.cpp.o
+[ 35%] Building CXX object CMakeFiles/dxinfer.dir/src/callback_inference.cpp.o
+[ 41%] Building CXX object CMakeFiles/dxinfer.dir/src/network.cpp.o
+[ 47%] Building CXX object CMakeFiles/dxinfer.dir/src/blocking_inference.cpp.o
+[ 52%] Building CXX object CMakeFiles/test_stats.dir/tests/test_stats.cpp.o
+[ 58%] Linking CXX executable test_stats
+[ 58%] Built target test_stats
+[ 64%] Linking CXX executable test_buffer_pool
+[ 64%] Built target test_buffer_pool
+[ 70%] Linking CXX executable test_reorder_buffer
+[ 70%] Built target test_reorder_buffer
+[ 76%] Linking CXX static library libdxinfer.a
+[ 76%] Built target dxinfer
+[ 82%] Building CXX object CMakeFiles/demo_callback.dir/examples/demo_callback.cpp.o
+[ 88%] Building CXX object CMakeFiles/demo_blocking.dir/examples/demo_blocking.cpp.o
+[ 94%] Linking CXX executable demo_callback
+[ 94%] Built target demo_callback
+[100%] Linking CXX executable demo_blocking
+[100%] Built target demo_blocking
+[setup] 4/4 host unit tests (no NPU needed)
+Test project /home/user/deepx/dx-all-suite/dx-runtime/dx_app/dx-agent-dev/20261117-172801_claude_opus55_multinet_inference_lib/build
+    Start 1: test_reorder_buffer
+1/3 Test #1: test_reorder_buffer ..............   Passed    0.08 sec
+    Start 2: test_buffer_pool
+2/3 Test #2: test_buffer_pool .................   Passed    0.06 sec
+    Start 3: test_stats
+3/3 Test #3: test_stats .......................   Passed    0.00 sec
+
+100% tests passed, 0 tests failed out of 3
+
+Total Test time (real) =   0.15 sec
+[setup] done: /home/user/deepx/dx-all-suite/dx-runtime/dx_app/dx-agent-dev/20261117-172801_claude_opus55_multinet_inference_lib/build/demo_blocking  /home/user/deepx/dx-all-suite/dx-runtime/dx_app/dx-agent-dev/20261117-172801_claude_opus55_multinet_inference_lib/build/demo_callback  (run ./run.sh on the target)
+setup.sh EXIT=0
+===== 2026-11-17 17:40:13 VERIFY =====
+--- forced rebuild, warning scan
+rebuild exit=0
+SCAN: no warnings, no errors
+--- strict syntax pass: g++ -std=c++14 -fsyntax-only -Wall -Wextra -Wpedantic -Wshadow -Wnon-virtual-dtor
+strict EXIT=0
+--- CLI checks (no NPU touched)
+demo_blocking --help            exit=0
+demo_blocking (no -n)           exit=1 : [error] at least one -n NAME=MODEL.dxnn is required
+demo_blocking -n bad            exit=1 : [error] -n expects NAME=PATH, got 'bad'
+demo_blocking --exec x          exit=1 : [error] --exec must be sync or async
+demo_blocking -b 0              exit=1 : [error] --buffer-count must be 1-100
+demo_callback --help            exit=0
+demo_callback (no -n)           exit=1 : [error] at least one -n NAME=MODEL.dxnn is required
+demo_callback -n bad            exit=1 : [error] -n expects NAME=PATH, got 'bad'
+demo_callback --exec x          exit=1 : [error] --exec must be sync or async
+demo_callback -b 0              exit=1 : [error] --buffer-count must be 1-100
+--- library validation before any device access (duplicate / empty names)
+duplicate name exit=1 : [dxinfer] network 'det': DuplicateName: name is used for more than one network
+--- linkage
+build/demo_callback: ELF 64-bit LSB pie executable, x86-64
+	libdxrt.so => /usr/local/lib/libdxrt.so (0x00007e3002000000)
+	libstdc++.so.6 => /lib/x86_64-linux-gnu/libstdc++.so.6 (0x00007e3001c00000)
+	libpthread.so.0 => /lib/x86_64-linux-gnu/libpthread.so.0 (0x00007e30022d5000)
+--- run.sh without a model (guard)
+[run] model not found: /nonexistent.dxnn
+[run] download it from the dx_app root: ./setup_sample_models.sh --models YOLOV11N
+[run] or pass a path: ./run.sh callback /path/to/model.dxnn
+run.sh exit=1
+===== 2026-11-17 17:41:59 COPY-OUT: build outside dx-all-suite =====
+copied to /tmp/dxinfer_copyout.6O9F
+no suite path references in code/scripts
+copy-out setup.sh EXIT=0
+[ 94%] Built target demo_callback
+[100%] Built target demo_blocking
+100% tests passed, 0 tests failed out of 3
+===== 2026-11-17 17:42:03 DELIVERABLES =====
+include/dxinfer/blocking_inference.hpp           42 lines
+include/dxinfer/buffer_pool.hpp                 153 lines
+include/dxinfer/callback_inference.hpp           59 lines
+include/dxinfer/dxinfer.hpp                      17 lines
+include/dxinfer/error.hpp                        84 lines
+include/dxinfer/inference_base.hpp               85 lines
+include/dxinfer/reorder_buffer.hpp              112 lines
+include/dxinfer/result.hpp                       76 lines
+include/dxinfer/stats.hpp                       109 lines
+include/dxinfer/types.hpp                        87 lines
+src/blocking_inference.cpp                       48 lines
+src/callback_inference.cpp                      116 lines
+src/inference_base.cpp                          178 lines
+src/network.cpp                                 416 lines
+src/network.hpp                                 100 lines
+src/stats.cpp                                   200 lines
+examples/demo_blocking.cpp                       70 lines
+examples/demo_callback.cpp                       59 lines
+examples/demo_common.hpp                        128 lines
+tests/test_buffer_pool.cpp                      117 lines
+tests/test_common.hpp                            42 lines
+tests/test_reorder_buffer.cpp                   148 lines
+tests/test_stats.cpp                            108 lines
+CMakeLists.txt                                   48 lines
+setup.sh                                         38 lines
+run.sh                                           36 lines
+README.md                                       146 lines
+205264 build/demo_blocking
+213112 build/demo_callback
+356966 build/libdxinfer.a
+===== 2026-11-17 18:09:28 ADDENDUM RED: new tests against the current headers =====
+--- g++ -std=c++14 -Iinclude -c tests/test_result.cpp
+tests/test_result.cpp:28:20: error: ‘dxinfer::detail::ResultAccess’ has not been declared
+tests/test_result.cpp:37:18: error: ‘class dxinfer::Result’ has no member named ‘copy_out’
+tests/test_result.cpp:38:13: error: ‘class dxinfer::Result’ has no member named ‘uses_pool’
+exit=1
+--- g++ -std=c++14 -Iinclude -c tests/test_pool_warning.cpp
+tests/test_pool_warning.cpp:3:10: fatal error: dxinfer/pool_warning.hpp: No such file or directory
+exit=1
+===== 2026-11-17 18:11:25 ADDENDUM GREEN: clean setup.sh =====
+        dx_rt : /usr/local (v3.5.0)
+[ 13%] Built target dxinfer_core
+[ 59%] Built target test_stats
+[ 68%] Built target test_pool_warning
+[ 68%] Built target test_buffer_pool
+[ 77%] Built target test_result
+[ 77%] Built target test_reorder_buffer
+[ 81%] Built target dxinfer
+[ 95%] Built target demo_callback
+[100%] Built target demo_blocking
+1/5 Test #1: test_reorder_buffer ..............   Passed    0.08 sec
+2/5 Test #2: test_buffer_pool .................   Passed    0.06 sec
+3/5 Test #3: test_stats .......................   Passed    0.00 sec
+4/5 Test #4: test_result ......................   Passed    0.00 sec
+5/5 Test #5: test_pool_warning ................   Passed    0.10 sec
+100% tests passed, 0 tests failed out of 5
+[setup] done: /home/user/deepx/dx-all-suite/dx-runtime/dx_app/dx-agent-dev/20261117-172801_claude_opus55_multinet_inference_lib/build/demo_blocking  /home/user/deepx/dx-all-suite/dx-runtime/dx_app/dx-agent-dev/20261117-172801_claude_opus55_multinet_inference_lib/build/demo_callback  (run ./run.sh on the target)
+setup.sh EXIT=0
+--- new test details
+[PASS] copy_has_same_metadata_and_bytes
+[PASS] copy_holds_no_block_and_outlives_original
+[PASS] copy_of_failed_result
+test_result: PASS (0 failed checks)
+[PASS] watch_is_edge_triggered_with_hysteresis
+[PASS] cleared_watch_reports_nothing
+[PASS] warner_prints_low_then_recovered
+[PASS] warner_is_rate_limited_and_counts_suppressed
+test_pool_warning: PASS (0 failed checks)
+--- warning scan of the full build log
+[  9%] Building CXX object CMakeFiles/dxinfer_core.dir/src/pool_warning.cpp.o
+[ 27%] Building CXX object CMakeFiles/test_pool_warning.dir/tests/test_pool_warning.cpp.o
+[ 63%] Linking CXX executable test_pool_warning
+[ 68%] Built target test_pool_warning
+    Start 5: test_pool_warning
+5/5 Test #5: test_pool_warning ................   Passed    0.10 sec
+SCAN: issues found
+--- strict syntax pass (-Wpedantic -Wshadow -Wnon-virtual-dtor)
+strict EXIT=0
+--- copy-out build
+copy-out setup.sh EXIT=0
+100% tests passed, 0 tests failed out of 5
+--- precise compiler-diagnostic scan (previous scan matched the file name 'pool_warning')
+SCAN: no compiler warnings, no errors
